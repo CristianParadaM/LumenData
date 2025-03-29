@@ -1,0 +1,28 @@
+{
+    "ipServices": {
+        "AbuseIPDB": {
+            "url": "https://api.abuseipdb.com",
+            "routes":{
+                "check": "/api/v2/check"
+            }
+        },
+        "Maltiverse": {
+            "url": "https://api.maltiverse.com",
+            "routes": {
+                "check": "/ip"
+            }
+        },
+        "ThreatBook": {
+            "url": "https://api.threatbook.io",
+            "routes":{
+                "check": "/v1/community/ip"
+            }
+        },
+        "VirusTotal": {
+            "url": "https://www.virustotal.com",
+            "routes": {
+                "check": "/api/v3/ip_addresses"
+            }
+        }
+    }
+}
