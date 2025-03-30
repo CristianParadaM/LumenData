@@ -1,5 +1,91 @@
 const Papa = require('papaparse')
-const XLSX = require('xlsx')
+const ExcelJS = require('exceljs')
+
+async function convertToXLSX(data) {
+  const workbook = new ExcelJS.Workbook();
+
+  for (const [service, results] of Object.entries(data)) {
+    const worksheet = workbook.addWorksheet(service);
+    
+    const formattedResults = expandJSONData(results);
+
+    const headers = Object.keys(formattedResults[0] || {});
+
+    const headerRow = worksheet.addRow(headers);
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF1F4E79' },
+      };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+      };
+    });
+
+    formattedResults.forEach((row, index) => {
+      const rowValues = headers.map((header) => row[header] !== undefined && row[header] !== null ? row[header] : "-");
+      const excelRow = worksheet.addRow(rowValues);
+
+      excelRow.eachCell((cell) => {
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: index % 2 === 0 ? 'FFD6EAF8' : 'FFEBF5FB' },
+        };
+      });
+    });
+
+    worksheet.columns.forEach((column) => {
+      let maxLength = 0;
+      column.eachCell({ includeEmpty: true }, (cell) => {
+        const length = cell.value ? cell.value.toString().length : 10;
+        if (length > maxLength) {
+          maxLength = length;
+        }
+      });
+      column.width = maxLength + 2;
+    });
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  return buffer.toString('base64');
+}
+
+function expandJSONData(data) {
+  let expandedData = [];
+
+  data.forEach((item) => {
+    let flatItem = {};
+    flattenObject(item, flatItem, "");
+    expandedData.push(flatItem);
+  });
+
+  return expandedData;
+}
+
+function flattenObject(obj, result, prefix) {
+  Object.entries(obj).forEach(([key, value]) => {
+    const newKey = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === 'object' && value !== null) {
+      flattenObject(value, result, newKey);
+    } else {
+      result[newKey] = value !== undefined && value !== null ? value : "-"; 
+    }
+  });
+}
 
 function decodeText(fileBase64) {
   const decodedText = Buffer.from(fileBase64, 'base64').toString('utf-8')
@@ -13,15 +99,6 @@ function convertToCSV(data) {
   data = formatData(data)
   const csv = Papa.unparse(data, { delimiter: ',', quotes: false })
   return Buffer.from(csv, 'utf-8').toString('base64')
-}
-
-function convertToXLSX(data) {
-  data = formatData(data)
-  const worksheet = XLSX.utils.json_to_sheet(data)
-  const workbook = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Results')
-  const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' })
-  return buffer.toString('base64')
 }
 
 function formatData(data) {

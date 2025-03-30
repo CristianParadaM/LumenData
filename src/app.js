@@ -20,10 +20,7 @@ app.use(
   })
 )
 
-app.use('/api/v1/abusepdb', require('./routes/abusepdb-v1-routes'))
-app.use('/api/v1/maltiverse', require('./routes/maltiverse-v1-routes'))
-app.use('/api/v1/threatBook', require('./routes/threatBook-v1-routes'))
-app.use('/api/v1/virusTotal', require('./routes/virusTotal-v1-routes'))
+app.use('/api/v1/ip', require('./routes/ip-v1-routes'))
 
 app.use((err, req, res, next) => {
   handleError(err, res)

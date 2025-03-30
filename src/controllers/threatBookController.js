@@ -1,35 +1,39 @@
 const { checkIpThreatBookService } = require('../services/threatBookService')
-const { decodeText, convertToCSV, convertToXLSX } = require('../utils/convertText')
 const { ErrorHandler } = require('../utils/errorHandler')
 
-exports.exec = async (req, res, next) => {
+exports.execThreatBook = async (params) => {
   try {
-    const { file, api_key, format } = req.body
-    const ips = decodeText(file)
-
-    if (ips.length === 0) return next(new ErrorHandler(400, 'El archivo no contiene IPs válidas'))
+    const { ips, api_keys, next } = params
 
     const results = await Promise.all(
-      ips.map(
-        async (ip) =>
-          await checkIpThreatBookService(
-            {},
-            {
-              apikey: api_key,
-              resource: ip,
-              include: 'summary,ports,cas,basic,asn',
-            }
+      ips.map(async (ip) => {
+        for (const apiKey of api_keys) {
+          try {
+            const result = await checkIpThreatBookService(
+              {},
+              {
+                apikey: apiKey,
+                resource: ip,
+                include: 'summary,ports,cas,basic,asn',
+              }
+            )
+            return result.data
+          } catch (error) {
+            console.warn(`⚠️ Error con API Key ${apiKey}, intentando con la siguiente...`)
+          }
+        }
+        return next(
+          new ErrorHandler(
+            400,
+            `Hay apiKeys invalidas o se agotaron las consultas máximas diarias para tus apiKeys de checkIpThreatBookService`
           )
-            .then((result) => result.data)
-            .catch(() => next(new ErrorHandler(400, 'El apiKey no es válido o ya alcanzaste el limte máximo diario')))
-      )
+        )
+      })
     )
-    console.log('🚀 ~ exports.exec= ~ results:', results)
-    console.log('🚀 ~ exports.exec= ~ format:', format)
 
-    res
-      .status(200)
-      .json({ result: format == 'xlsx' ? convertToXLSX(results) : convertToCSV(results) })
+    console.log('🚀 results checkIpThreatBookService:', results)
+
+    return results
   } catch (error) {
     next(error)
   }

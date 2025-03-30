@@ -5,15 +5,14 @@ const bodyGeneralSchema = Joi.object({
     'string.empty': 'El archivo es obligatorio en formato BASE64',
     'any.required': 'El archivo es obligatorio en formato BASE64',
   }),
-  api_key: Joi.string().required().messages({
-    'string.empty': 'El api_key es obligatorio',
-    'any.required': 'El api_key es obligatorio',
+  api_keys: Joi.object().required().messages({
+    'any.required': 'El campo "api_keys" es obligatorio',
   }),
   format: Joi.string().valid('csv', 'xlsx').required().messages({
     'string.empty': 'El formato es obligatorio',
     'any.required': 'El formato es obligatorio',
     'any.only': 'El formato debe ser "csv" o "xlsx"',
-  }),
+  })
 })
 
 exports.validateBody = (req, res, next) => {
