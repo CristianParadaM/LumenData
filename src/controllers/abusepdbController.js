@@ -14,7 +14,7 @@ exports.exec = async (req, res, next) => {
         async (ip) =>
           await checkIpAbusepdbService({ Key: api_key }, { ipAddress: ip })
             .then((result) => result.data)
-            .catch(() => next(new ErrorHandler(400, 'El apiKey no es válido o ya venció')))
+            .catch(() => next(new ErrorHandler(400, 'El apiKey no es válido o ya alcanzaste el limte máximo diario')))
       )
     )
     console.log('🚀 ~ exports.exec= ~ results:', results)

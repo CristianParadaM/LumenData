@@ -15,7 +15,7 @@ exports.exec = async (req, res, next) => {
           await checkIpMaltiverseService(
             { Authorization: `bearer ${api_key}` },
             { ipAddress: ip }
-          ).catch(() => next(new ErrorHandler(400, 'El apiKey no es válido o ya venció')))
+          ).catch(() => next(new ErrorHandler(400, 'El apiKey no es válido o ya alcanzaste el limte máximo diario')))
       )
     )
     console.log('🚀 ~ exports.exec= ~ results:', results)
