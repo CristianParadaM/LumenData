@@ -10,3 +10,12 @@ exports.checkIpVirusTotalService = async (headers, params) => {
     params
   })
 }
+
+exports.checkIpVirusTotalQuotesService = async (headers, params) => {
+  return get({
+    service,
+    path: `${config.ipServices.VirusTotal.routes.quotes}/${params.apiKey}`,
+    headers,
+    params
+  })
+}

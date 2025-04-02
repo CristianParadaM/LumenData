@@ -21,7 +21,8 @@
         "VirusTotal": {
             "url": "https://www.virustotal.com",
             "routes": {
-                "check": "/api/v3/ip_addresses"
+                "check": "/api/v3/ip_addresses",
+                "quotes": "/api/v3/users"
             }
         }
     }
